@@ -4,26 +4,42 @@ module.exports = function transform(arr) {
   if (!Array.isArray(arr)) {
     throw new Error();
   } else {
-    const newArr = [...arr];
+    const newArr = [];
+    let del = false;
+    let indexNum;
     arr.forEach((el, index) => {
-      if (el === "--discard-prev") {
-        index === 0
-          ? newArr.splice(index, 1)
-          : newArr.splice(index - 1, 2);
+      if (el === "--discard-prev" && !del) {
+        if (index !== 0) {
+          newArr.pop();
+        }
       } else if (el === "--discard-next") {
-        index === newArr.length - 1
-          ? newArr.splice(index, 1)
-          : newArr.splice(index, 2);
-      } else if (el === "--double-prev") {
-        index === 0
-          ? newArr.splice(index, 1)
-          : newArr.splice(index, 1, newArr[index - 1]);
+        del = true;
+        if (index < arr.length - 1) {
+          indexNum = index + 1;
+        }
+        if (
+          arr[index + 2] == "--discard-prev" ||
+          arr[index + 2] == "--double-prev"
+        ) {
+          indexNum = index + 2;
+        }
+      } else if (el === "--double-prev" && !del) {
+        if (index !== 0) {
+          newArr.push(arr[index - 1]);
+        }
       } else if (el === "--double-next") {
-        index === newArr.length - 1
-          ? newArr.splice(index, 1)
-          : newArr.splice(index, 1, newArr[index + 1]);
+        if (index < arr.length - 1) {
+          newArr.push(arr[index + 1]);
+        }
+      } else {
+        if (!del) {
+          newArr.push(el);
+        } else {
+          if (index == indexNum) del = false;
+        }
       }
     });
+
     return newArr;
   }
 };
